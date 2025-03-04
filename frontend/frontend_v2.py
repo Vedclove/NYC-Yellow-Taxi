@@ -289,3 +289,66 @@ for location_id in top10:
         prediction=predictions[predictions["pickup_location_id"] == location_id],
     )
     st.plotly_chart(fig, theme="streamlit", use_container_width=True)
+
+# Create a Drop Down
+selected_location = st.selectbox(
+    "Select a location to view predictions:",
+    options=top10,
+    format_func=lambda x: f"Location ID: {x}",
+)
+
+def create_filtered_taxi_map(shapefile_path, prediction_data, selected_location):
+    """
+    Create an interactive map showing demand for the selected location.
+    """
+    nyc_zones = gpd.read_file(shapefile_path)
+
+    # Filter only the selected location's data
+    selected_data = prediction_data[prediction_data["pickup_location_id"] == selected_location]
+
+    # Merge with shapefile
+    nyc_zones = nyc_zones.merge(
+        selected_data[["pickup_location_id", "predicted_demand"]],
+        left_on="LocationID",
+        right_on="pickup_location_id",
+        how="left",
+    )
+
+    nyc_zones["predicted_demand"] = nyc_zones["predicted_demand"].fillna(0)
+    nyc_zones = nyc_zones.to_crs(epsg=4326)
+
+
+    m = folium.Map(location=[40.7128, -74.0060], zoom_start=10, tiles="cartodbpositron")
+
+    colormap = LinearColormap(
+        colors=["#FFEDA0", "#FD8D3C", "#BD0026"],
+        vmin=nyc_zones["predicted_demand"].min(),
+        vmax=nyc_zones["predicted_demand"].max(),
+    )
+
+    colormap.add_to(m)
+
+
+    def style_function(feature):
+        predicted_demand = feature["properties"].get("predicted_demand", 0)
+        return {
+            "fillColor": colormap(float(predicted_demand)) if predicted_demand > 0 else "gray",
+            "color": "black",
+            "weight": 2,
+            "fillOpacity": 0.7 if predicted_demand > 0 else 0.2,
+        }
+
+    folium.GeoJson(
+        nyc_zones.to_json(),
+        style_function=style_function,
+        tooltip=folium.GeoJsonTooltip(
+            fields=["LocationID", "predicted_demand"],
+            aliases=["Zone ID:", "Predicted Demand:"],
+        ),
+    ).add_to(m)
+
+    return m
+
+
+filtered_map = create_filtered_taxi_map(shapefile_path, predictions, selected_location)
+st_folium(filtered_map, width=800, height=600, returned_objects=[])
