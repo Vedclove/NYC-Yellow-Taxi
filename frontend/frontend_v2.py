@@ -308,7 +308,6 @@ selected_location = st.selectbox(
     format_func=lambda x: location_options[x]  # Show names in dropdown
 )
 
-########----------
 # Ensure merged_df is created by merging ride data and predictions
 merged_df = pd.merge(fetch_hourly_rides(24), fetch_predictions(24), on=["pickup_location_id", "pickup_hour"])
 
