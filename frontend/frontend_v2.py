@@ -15,9 +15,11 @@ import requests
 import streamlit as st
 from branca.colormap import LinearColormap
 from streamlit_folium import st_folium
+import plotly.express as px
+
 
 from src.config import DATA_DIR
-from src.inference import fetch_next_hour_predictions, load_batch_of_features_from_store
+from src.inference import fetch_next_hour_predictions, load_batch_of_features_from_store, fetch_hourly_rides, fetch_predictions
 from src.plot_utils import plot_prediction
 
 # Add parent directory to Python path
@@ -289,66 +291,55 @@ for location_id in top10:
         prediction=predictions[predictions["pickup_location_id"] == location_id],
     )
     st.plotly_chart(fig, theme="streamlit", use_container_width=True)
+###########--------
 
-# Create a Drop Down
+location = {1: 'Newark Airport', 2: 'Jamaica Bay', 3: 'Allerton/Pelham Gardens', 4: 'Alphabet City', 5: 'Arden Heights', 6: 'Arrochar/Fort Wadsworth', 7: 'Astoria', 8: 'Astoria Park', 9: 'Auburndale', 10: 'Baisley Park', 11: 'Bath Beach', 12: 'Battery Park', 13: 'Battery Park City', 14: 'Bay Ridge', 15: 'Bay Terrace/Fort Totten', 16: 'Bayside', 17: 'Bedford', 18: 'Bedford Park', 19: 'Bellerose', 20: 'Belmont', 21: 'Bensonhurst East', 22: 'Bensonhurst West', 23: 'Bloomfield/Emerson Hill', 24: 'Bloomingdale', 25: 'Boerum Hill', 26: 'Borough Park', 27: 'Breezy Point/Fort Tilden/Riis Beach', 28: 'Briarwood/Jamaica Hills', 29: 'Brighton Beach', 30: 'Broad Channel', 31: 'Bronx Park', 32: 'Bronxdale', 33: 'Brooklyn Heights', 34: 'Brooklyn Navy Yard', 35: 'Brownsville', 36: 'Bushwick North', 37: 'Bushwick South', 38: 'Cambria Heights', 39: 'Canarsie', 40: 'Carroll Gardens', 41: 'Central Harlem', 42: 'Central Harlem North', 43: 'Central Park', 44: 'Charleston/Tottenville', 45: 'Chinatown', 46: 'City Island', 47: 'Claremont/Bathgate', 48: 'Clinton East', 49: 'Clinton Hill', 50: 'Clinton West', 51: 'Co-Op City', 52: 'Cobble Hill', 53: 'College Point', 54: 'Columbia Street', 55: 'Coney Island', 56: 'Corona', 57: 'Corona', 58: 'Country Club', 59: 'Crotona Park', 60: 'Crotona Park East', 61: 'Crown Heights North', 62: 'Crown Heights South', 63: 'Cypress Hills', 64: 'Douglaston', 65: 'Downtown Brooklyn/MetroTech', 66: 'DUMBO/Vinegar Hill', 67: 'Dyker Heights', 68: 'East Chelsea', 69: 'East Concourse/Concourse Village', 70: 'East Elmhurst', 71: 'East Flatbush/Farragut', 72: 'East Flatbush/Remsen Village', 73: 'East Flushing', 74: 'East Harlem North', 75: 'East Harlem South', 76: 'East New York', 77: 'East New York/Pennsylvania Avenue', 78: 'East Tremont', 79: 'East Village', 80: 'East Williamsburg', 81: 'Eastchester', 82: 'Elmhurst', 83: 'Elmhurst/Maspeth', 84: "Eltingville/Annadale/Prince's Bay", 85: 'Erasmus', 86: 'Far Rockaway', 87: 'Financial District North', 88: 'Financial District South', 89: 'Flatbush/Ditmas Park', 90: 'Flatiron', 91: 'Flatlands', 92: 'Flushing', 93: 'Flushing Meadows-Corona Park', 94: 'Fordham South', 95: 'Forest Hills', 96: 'Forest Park/Highland Park', 97: 'Fort Greene', 98: 'Fresh Meadows', 99: 'Freshkills Park', 100: 'Garment District', 101: 'Glen Oaks', 102: 'Glendale', 103: "Governor's Island/Ellis Island/Liberty Island", 104: "Governor's Island/Ellis Island/Liberty Island", 105: "Governor's Island/Ellis Island/Liberty Island", 106: 'Gowanus', 107: 'Gramercy', 108: 'Gravesend', 109: 'Great Kills', 110: 'Great Kills Park', 111: 'Green-Wood Cemetery', 112: 'Greenpoint', 113: 'Greenwich Village North', 114: 'Greenwich Village South', 115: 'Grymes Hill/Clifton', 116: 'Hamilton Heights', 117: 'Hammels/Arverne', 118: 'Heartland Village/Todt Hill', 119: 'Highbridge', 120: 'Highbridge Park', 121: 'Hillcrest/Pomonok', 122: 'Hollis', 123: 'Homecrest', 124: 'Howard Beach', 125: 'Hudson Sq', 126: 'Hunts Point', 127: 'Inwood', 128: 'Inwood Hill Park', 129: 'Jackson Heights', 130: 'Jamaica', 131: 'Jamaica Estates', 132: 'JFK Airport', 133: 'Kensington', 134: 'Kew Gardens', 135: 'Kew Gardens Hills', 136: 'Kingsbridge Heights', 137: 'Kips Bay', 138: 'LaGuardia Airport', 139: 'Laurelton', 140: 'Lenox Hill East', 141: 'Lenox Hill West', 142: 'Lincoln Square East', 143: 'Lincoln Square West', 144: 'Little Italy/NoLiTa', 145: 'Long Island City/Hunters Point', 146: 'Long Island City/Queens Plaza', 147: 'Longwood', 148: 'Lower East Side', 149: 'Madison', 150: 'Manhattan Beach', 151: 'Manhattan Valley', 152: 'Manhattanville', 153: 'Marble Hill', 154: 'Marine Park/Floyd Bennett Field', 155: 'Marine Park/Mill Basin', 156: 'Mariners Harbor', 157: 'Maspeth', 158: 'Meatpacking/West Village West', 159: 'Melrose South', 160: 'Middle Village', 161: 'Midtown Center', 162: 'Midtown East', 163: 'Midtown North', 164: 'Midtown South', 165: 'Midwood', 166: 'Morningside Heights', 167: 'Morrisania/Melrose', 168: 'Mott Haven/Port Morris', 169: 'Mount Hope', 170: 'Murray Hill', 171: 'Murray Hill-Queens', 172: 'New Dorp/Midland Beach', 173: 'North Corona', 174: 'Norwood', 175: 'Oakland Gardens', 176: 'Oakwood', 177: 'Ocean Hill', 178: 'Ocean Parkway South', 179: 'Old Astoria', 180: 'Ozone Park', 181: 'Park Slope', 182: 'Parkchester', 183: 'Pelham Bay', 184: 'Pelham Bay Park', 185: 'Pelham Parkway', 186: 'Penn Station/Madison Sq West', 187: 'Port Richmond', 188: 'Prospect-Lefferts Gardens', 189: 'Prospect Heights', 190: 'Prospect Park', 191: 'Queens Village', 192: 'Queensboro Hill', 193: 'Queensbridge/Ravenswood', 194: 'Randalls Island', 195: 'Red Hook', 196: 'Rego Park', 197: 'Richmond Hill', 198: 'Ridgewood', 199: 'Rikers Island', 200: 'Riverdale/North Riverdale/Fieldston', 201: 'Rockaway Park', 202: 'Roosevelt Island', 203: 'Rosedale', 204: 'Rossville/Woodrow', 205: 'Saint Albans', 206: 'Saint George/New Brighton', 207: 'Saint Michaels Cemetery/Woodside', 208: 'Schuylerville/Edgewater Park', 209: 'Seaport', 210: 'Sheepshead Bay', 211: 'SoHo', 212: 'Soundview/Bruckner', 213: 'Soundview/Castle Hill', 214: 'South Beach/Dongan Hills', 215: 'South Jamaica', 216: 'South Ozone Park', 217: 'South Williamsburg', 218: 'Springfield Gardens North', 219: 'Springfield Gardens South', 220: 'Spuyten Duyvil/Kingsbridge', 221: 'Stapleton', 222: 'Starrett City', 223: 'Steinway', 224: 'Stuy Town/Peter Cooper Village', 225: 'Stuyvesant Heights', 226: 'Sunnyside', 227: 'Sunset Park East', 228: 'Sunset Park West', 229: 'Sutton Place/Turtle Bay North', 230: 'Times Sq/Theatre District', 231: 'TriBeCa/Civic Center', 232: 'Two Bridges/Seward Park', 233: 'UN/Turtle Bay South', 234: 'Union Sq', 235: 'University Heights/Morris Heights', 236: 'Upper East Side North', 237: 'Upper East Side South', 238: 'Upper West Side North', 239: 'Upper West Side South', 240: 'Van Cortlandt Park', 241: 'Van Cortlandt Village', 242: 'Van Nest/Morris Park', 243: 'Washington Heights North', 244: 'Washington Heights South', 245: 'West Brighton', 246: 'West Chelsea/Hudson Yards', 247: 'West Concourse', 248: 'West Farms/Bronx River', 249: 'West Village', 250: 'Westchester Village/Unionport', 251: 'Westerleigh', 252: 'Whitestone', 253: 'Willets Point', 254: 'Williamsbridge/Olinville', 255: 'Williamsburg (North Side)', 256: 'Williamsburg (South Side)', 257: 'Windsor Terrace', 258: 'Woodhaven', 259: 'Woodlawn/Wakefield', 260: 'Woodside', 261: 'World Trade Center', 262: 'Yorkville East', 263: 'Yorkville West', 264: "nan", 265: 'Outside of NYC'}
+
+# Get all unique location IDs from predictions
+all_locations = predictions["pickup_location_id"].unique()
+
+# Create a mapping of available IDs to names (fallback to ID if name is missing)
+location_options = {loc_id: location.get(loc_id, f"Location ID {loc_id}") for loc_id in all_locations}
+
+# Dropdown displaying location names instead of IDs
 selected_location = st.selectbox(
-    "Select a location to view predictions:",
-    options=top10,
-    format_func=lambda x: f"Location ID: {x}",
+    "Select a Location:",
+    options=location_options.keys(),  # Use IDs internally
+    format_func=lambda x: location_options[x]  # Show names in dropdown
 )
 
-def create_filtered_taxi_map(shapefile_path, prediction_data, selected_location):
-    """
-    Create an interactive map showing demand for the selected location.
-    """
-    nyc_zones = gpd.read_file(shapefile_path)
+########----------
+# Ensure merged_df is created by merging ride data and predictions
+merged_df = pd.merge(fetch_hourly_rides(24), fetch_predictions(24), on=["pickup_location_id", "pickup_hour"])
 
-    # Filter only the selected location's data
-    selected_data = prediction_data[prediction_data["pickup_location_id"] == selected_location]
+# Calculate the absolute error
+merged_df["absolute_error"] = abs(merged_df["predicted_demand"] - merged_df["rides"])
 
-    # Merge with shapefile
-    nyc_zones = nyc_zones.merge(
-        selected_data[["pickup_location_id", "predicted_demand"]],
-        left_on="LocationID",
-        right_on="pickup_location_id",
-        how="left",
+# Filter data for the selected location
+filtered_df = merged_df[merged_df["pickup_location_id"] == selected_location]
+
+# Check if data is available for the selected location
+if filtered_df.empty:
+    st.warning(f"No data available for {location_options[selected_location]} (ID: {selected_location})")
+else:
+    # Group by 'pickup_hour' and calculate the mean absolute error (MAE) for the selected location
+    mae_selected_location = (
+        filtered_df.groupby("pickup_hour")["absolute_error"].mean().reset_index()
+    )
+    mae_selected_location.rename(columns={"absolute_error": "MAE"}, inplace=True)
+
+    # Create a Plotly plot for the selected location
+    fig_selected = px.line(
+        mae_selected_location,
+        x="pickup_hour",
+        y="MAE",
+        title=f"Mean Absolute Error (MAE) for {location[selected_location]} (ID: {selected_location})",
+        labels={"pickup_hour": "Pickup Hour", "MAE": "Mean Absolute Error"},
+        markers=True,
     )
 
-    nyc_zones["predicted_demand"] = nyc_zones["predicted_demand"].fillna(0)
-    nyc_zones = nyc_zones.to_crs(epsg=4326)
-
-
-    m = folium.Map(location=[40.7128, -74.0060], zoom_start=10, tiles="cartodbpositron")
-
-    colormap = LinearColormap(
-        colors=["#FFEDA0", "#FD8D3C", "#BD0026"],
-        vmin=nyc_zones["predicted_demand"].min(),
-        vmax=nyc_zones["predicted_demand"].max(),
-    )
-
-    colormap.add_to(m)
-
-
-    def style_function(feature):
-        predicted_demand = feature["properties"].get("predicted_demand", 0)
-        return {
-            "fillColor": colormap(float(predicted_demand)) if predicted_demand > 0 else "gray",
-            "color": "black",
-            "weight": 2,
-            "fillOpacity": 0.7 if predicted_demand > 0 else 0.2,
-        }
-
-    folium.GeoJson(
-        nyc_zones.to_json(),
-        style_function=style_function,
-        tooltip=folium.GeoJsonTooltip(
-            fields=["LocationID", "predicted_demand"],
-            aliases=["Zone ID:", "Predicted Demand:"],
-        ),
-    ).add_to(m)
-
-    return m
-
-
-filtered_map = create_filtered_taxi_map(shapefile_path, predictions, selected_location)
-st_folium(filtered_map, width=800, height=600, returned_objects=[])
+    # Display the plot
+    st.plotly_chart(fig_selected)
+    
+    # Display average MAE for the selected location
+    st.write(f'**Average MAE for {location[selected_location]}:** {mae_selected_location["MAE"].mean():.2f}')
